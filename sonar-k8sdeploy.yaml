@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sonar-qube
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cor-sqb-app-svc
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb
+    tier: quality
+    version: v1
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: cor-sqb
+    tier: quality
+    version: v1
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cor-sqb-app-dep
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb
+    tier: quality
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      app: cor-sqb
+      tier: quality
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cor-sqb
+        tier: quality
+        version: v1
+    spec:
+      containers:
+        - name: sonarqube
+          image: sonarqube:7.9.4-community
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2048Mi
+          # envFrom:
+          #   - configMapRef:
+          #       name: cor-sqb-cfg
+          ports:
+          - containerPort: 9000
+            protocol: TCP
+---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: cor-sqb-cfg
+#   namespace: sonar-qube
+#   labels:
+#     app: cor-sqb
+#     tier: persistence
+#     version: v1
+# data:
+#   SONARQUBE_JDBC_URL: jdbc:postgresql://cor-sqb-ptg-svc/sonar
+#   SONARQUBE_JDBC_USERNAME: admin
+#   SONARQUBE_JDBC_PASSWORD: admin123*

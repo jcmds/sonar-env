@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sonar-qube
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cor-sqb-ptg-svc
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb-ptg
+    tier: persistence
+    version: v1
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432  
+  selector:
+    app: cor-sqb-ptg
+    tier: persistence
+    version: v1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cor-sqb-ptg-dep
+  namespace: sonar-qube
+spec:
+  selector:
+    matchLabels:
+      app: cor-sqb-ptg
+      tier: persistence
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cor-sqb-ptg
+        tier: persistence
+        version: v1
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:10.4
+          resources:
+            requests:
+              cpu: 25m
+              memory: 100Mi
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: cor-sqb-ptg-cfg
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: cor-sqb-ptg-pv-vol-cla
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cor-sqb-ptg-cfg
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb-ptg
+    tier: persistence
+    version: v1
+data:
+  POSTGRES_DB: sonar
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: admin123*
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cor-sqb-ptg-pv-vol
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb
+    tier: persistence
+    version: v1
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cor-sqb-ptg-pv-vol-cla
+  namespace: sonar-qube
+  labels:
+    app: cor-sqb-ptg
+    tier: persistence
+    version: v1
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
