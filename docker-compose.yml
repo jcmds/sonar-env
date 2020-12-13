@@ -1,15 +1,5 @@
 version: "3.7"
 services:
-  postgres:
-    container_name: ptg-dep
-    build:
-      context: .
-      dockerfile: postgres.Dockerfile
-    networks:
-      - sonarnet
-    volumes:
-      - postgresql:/var/lib/postgresql
-      - postgresql_data:/var/lib/postgresql/data
   sonarqube:
     container_name: snq-dep
     build:
@@ -18,18 +8,11 @@ services:
     ports:
       - "9000:9000"
       - "9092:9092"
-    networks:
-      - sonarnet
     volumes:
       - sonarqube_conf:/opt/sonarqube/conf
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
-    depends_on:
-      - postgres
-networks:
-  sonarnet:
-    driver: bridge
 volumes:
   postgresql:
   postgresql_data:

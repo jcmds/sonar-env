@@ -1,1 +1,1 @@
-FROM sonarqube:lts-alpine
+FROM sonarqube:8.2-community
