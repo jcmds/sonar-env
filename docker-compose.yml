@@ -1,10 +1,18 @@
 version: "3.7"
 services:
   sonarqube:
-    container_name: snq-dep
-    build:
-      context: .
-      dockerfile: sonar.Dockerfile
+    container_name: sonarqube
+    image: sonarqube:8.2-community
     ports:
       - "9000:9000"
       - "9092:9092"
+    volumes: 
+      - sonarqube-config:/opt/sonarqube/conf
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-log:/opt/sonarqube/log
+      - sonarqube-extension:/opt/sonarqube/extension
+volumes: 
+  sonarqube-config:
+  sonarqube-data:
+  sonarqube-log:
+  sonarqube-extension:      
